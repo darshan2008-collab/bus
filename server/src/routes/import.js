@@ -312,13 +312,26 @@ router.post('/preview', upload.single('file'), async (req, res) => {
       } else if (existingRegMap.has(regNo)) {
         const existing = existingRegMap.get(regNo);
         isDuplicateInDB = true;
-        duplicateReason = `Already exists in database (${existing.department || department} - ${regNo})`;
+        duplicateReason = `Already in database (${existing.department || department}) - will update details`;
       } else if (existingCompositeSet.has(`${normalizedName}|${department}`)) {
         isDuplicateInDB = true;
-        duplicateReason = `Already exists in database (${name} - ${department})`;
+        duplicateReason = `Already in database (${name}) - will update details`;
       }
 
-      if (isDuplicateInFile || isDuplicateInDB) {
+      if (isDuplicateInFile) {
+        duplicateRecords.push({
+          rowNumber,
+          register_number: regNo,
+          name,
+          department,
+          bus_number: busNumber,
+          stop_name: stopName,
+          reason: duplicateReason
+        });
+        continue; // Only skip genuine duplicates within the file itself
+      }
+
+      if (isDuplicateInDB) {
         duplicateRecords.push({
           rowNumber,
           register_number: regNo,
@@ -337,7 +350,7 @@ router.post('/preview', upload.single('file'), async (req, res) => {
           register_number: regNo || 'Missing',
           errors
         });
-      } else if (!isDuplicateInFile && !isDuplicateInDB) {
+      } else {
         seenInFile.add(studentCompositeKey);
         seenInFile.add(regNo);
         const record = {
@@ -348,7 +361,8 @@ router.post('/preview', upload.single('file'), async (req, res) => {
           bus_number: busNumber,
           stop_name: stopName,
           department,
-          year
+          year,
+          is_update: isDuplicateInDB
         };
         validRecords.push(record);
 
@@ -494,33 +508,34 @@ router.post('/commit', verifyToken, requireRole(['ADMIN', 'COORDINATOR', 'STUDEN
     // COMMIT TO STUDENTS TABLE (Student Attendance Roster)
     // -------------------------------------------------------------------------
     let insertedCount = 0;
-    let skippedCount = 0;
+    let updatedCount = 0;
 
     for (const rec of records) {
-      // Check if student with this register_number already exists in database
-      const existing = await query.get('SELECT id FROM students WHERE register_number = ?', [rec.register_number]);
-      if (existing) {
-        skippedCount++;
-        continue;
-      }
+      if (!rec.register_number || !rec.name) continue;
 
-      // 1. Find or create Bus
-      let bus = await query.get('SELECT id FROM buses WHERE bus_number = ?', [rec.bus_number]);
+      // 1. Determine Target Bus
       let busId;
-      if (!bus) {
-        const busInsert = await query.run(`
-          INSERT INTO buses (bus_number, route_name, capacity, is_active)
-          VALUES (?, ?, 60, 1)
-        `, [rec.bus_number, `${rec.bus_number} Route`]);
-        busId = busInsert.lastID;
+      if (req.body.targetBusId) {
+        busId = req.body.targetBusId;
       } else {
-        busId = bus.id;
+        const busNum = rec.bus_number || 'BUS 16';
+        let bus = await query.get('SELECT id FROM buses WHERE bus_number = ?', [busNum]);
+        if (!bus) {
+          const busInsert = await query.run(`
+            INSERT INTO buses (bus_number, route_name, capacity, is_active)
+            VALUES (?, ?, 60, 1)
+          `, [busNum, `${busNum} Route`]);
+          busId = busInsert.lastID;
+        } else {
+          busId = bus.id;
+        }
       }
 
-      // 2. Find or create Bus Stop
+      // 2. Find or create Bus Stop under this bus
+      const stopName = (rec.stop_name || 'Campus / Main Stop').trim();
       let stop = await query.get(
         'SELECT id FROM bus_stops WHERE bus_id = ? AND LOWER(stop_name) = LOWER(?)',
-        [busId, rec.stop_name]
+        [busId, stopName]
       );
       let stopId;
       if (!stop) {
@@ -530,31 +545,45 @@ router.post('/commit', verifyToken, requireRole(['ADMIN', 'COORDINATOR', 'STUDEN
         const stopInsert = await query.run(`
           INSERT INTO bus_stops (bus_id, stop_name, stop_order, pickup_time)
           VALUES (?, ?, ?, '08:00 AM')
-        `, [busId, rec.stop_name, nextOrder]);
+        `, [busId, stopName, nextOrder]);
         stopId = stopInsert.lastID;
       } else {
         stopId = stop.id;
       }
 
-      // 3. Insert Student
-      await query.run(`
-        INSERT INTO students (register_number, name, gender, bus_id, stop_id, department, year, is_active)
-        VALUES (?, ?, ?, ?, ?, ?, ?, 1)
-        ON CONFLICT(register_number) DO NOTHING
-      `, [rec.register_number, rec.name, rec.gender, busId, stopId, rec.department || 'CSE', rec.year || 'II']);
-
-      insertedCount++;
+      // 3. Upsert Student (Update if exists, Insert if new)
+      const existing = await query.get('SELECT id FROM students WHERE register_number = ?', [rec.register_number]);
+      if (existing) {
+        await query.run(`
+          UPDATE students SET
+            name = ?,
+            gender = ?,
+            bus_id = ?,
+            stop_id = ?,
+            department = ?,
+            year = ?,
+            is_active = 1
+          WHERE id = ?
+        `, [rec.name, rec.gender || 'MALE', busId, stopId, rec.department || 'CSE', rec.year || 'II', existing.id]);
+        updatedCount++;
+      } else {
+        await query.run(`
+          INSERT INTO students (register_number, name, gender, bus_id, stop_id, department, year, is_active)
+          VALUES (?, ?, ?, ?, ?, ?, ?, 1)
+        `, [rec.register_number, rec.name, rec.gender || 'MALE', busId, stopId, rec.department || 'CSE', rec.year || 'II']);
+        insertedCount++;
+      }
     }
 
-    const message = skippedCount > 0
-      ? `Successfully imported ${insertedCount} new students (${skippedCount} existing duplicates skipped).`
-      : `Successfully imported ${insertedCount} students grouped into stops and buses.`;
+    const message = updatedCount > 0
+      ? `Successfully saved ${insertedCount + updatedCount} students (${insertedCount} new added, ${updatedCount} updated) across bus stops.`
+      : `Successfully imported ${insertedCount} students grouped into stops.`;
 
     return res.json({
       success: true,
       message,
       inserted_count: insertedCount,
-      skipped_count: skippedCount
+      updated_count: updatedCount
     });
   } catch (err) {
     console.error('[Import Commit Error]:', err);

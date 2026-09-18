@@ -20,7 +20,7 @@ import {
 } from 'lucide-react';
 
 export default function ImportPage({ onNavigateToFaculty }) {
-  const { isAdmin } = useAuth();
+  const { isAdmin, selectedBusId } = useAuth();
   const [targetType, setTargetType] = useState('STUDENTS'); // 'STUDENTS' | 'FACULTY'
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -186,7 +186,8 @@ CAMPUS BUS TRANSPORT ROSTER - BUS 16
         method: 'POST',
         body: JSON.stringify({
           records: previewResult.valid_records,
-          targetType: previewResult.target_type || targetType
+          targetType: previewResult.target_type || targetType,
+          targetBusId: selectedBusId
         })
       });
       setCommitResult(res);
