@@ -1,0 +1,564 @@
+/* ==========================================================================
+   MOBILE-FIRST RESPONSIVE DESIGN SYSTEM
+   Optimized for smartphones (iPhone, Samsung Galaxy, Pixel) & tablet devices
+   ========================================================================== */
+
+/* Universal mobile-safe layout bounds
+   NOTE: DO NOT set overflow-x:hidden on html/body — it breaks position:fixed on mobile browsers */
+html, body, #root {
+  max-width: 100vw;
+  -webkit-text-size-adjust: 100%;
+}
+
+.app-layout {
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+.main-content {
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+/* Touch & tap ergonomics */
+button, a, input, select, .clickable {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Hide scrollbar utility for touch scrollers */
+.no-scrollbar::-webkit-scrollbar,
+.date-ribbon-container::-webkit-scrollbar,
+.stop-scroller::-webkit-scrollbar,
+.filter-chips-scroller::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+.no-scrollbar,
+.date-ribbon-container,
+.stop-scroller,
+.filter-chips-scroller {
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
+}
+
+/* Smooth inertia scrolling */
+.stop-scroller,
+.date-ribbon-container,
+.table-responsive,
+.filter-chips-scroller {
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
+
+/* ==========================================================================
+   MOBILE SCREEN BREAKPOINT: <= 767px (PHONES & PORTRAIT TABLETS)
+   ========================================================================== */
+@media (max-width: 767px) {
+  /* Layout switching */
+  .desktop-sidebar {
+    display: none !important;
+  }
+
+  .desktop-only {
+    display: none !important;
+  }
+
+  /* Header mobile-fit alignment */
+  .app-header {
+    padding: 6px 12px;
+    gap: 6px;
+    min-height: 52px;
+  }
+
+  .header-brand {
+    gap: 6px;
+    min-width: 0;
+    flex-shrink: 1;
+  }
+
+  .header-title {
+    font-size: 13.5px;
+    font-weight: 800;
+    white-space: nowrap;
+  }
+
+  .header-bus-badge {
+    display: none !important;
+  }
+
+  .header-actions {
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  .header-user-btn {
+    padding: 4px 7px;
+    font-size: 10.5px;
+  }
+
+  .sync-pill {
+    padding: 3px 6px;
+    font-size: 9.5px;
+  }
+
+  .bottom-nav,
+  .menu {
+    display: flex !important;
+  }
+
+  .main-content {
+    padding-bottom: calc(130px + env(safe-area-inset-bottom, 0px));
+  }
+
+  /* Responsive Table vs Card switching */
+  .desktop-table-view {
+    display: none !important;
+  }
+
+  .mobile-card-list {
+    display: flex !important;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+  }
+
+  /* Responsive Grids on Mobile */
+  .grid-2col,
+  .grid-3col,
+  .grid-4col {
+    grid-template-columns: 1fr !important;
+  }
+
+  .responsive-grid-2col {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+  }
+
+  .import-summary-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+  }
+
+  .history-filter-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+  }
+
+  .history-filter-grid select:last-child:nth-child(odd) {
+    grid-column: span 2;
+  }
+
+  .stop-stats-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 6px !important;
+  }
+
+  .login-preset-grid {
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+  }
+
+  /* Reports page date & actions stack */
+  .reports-action-row {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+  }
+
+  .reports-action-buttons {
+    width: 100% !important;
+    display: grid !important;
+    grid-template-columns: 1fr auto !important;
+    gap: 8px !important;
+  }
+
+  /* Modals as bottom-sheets */
+  .modal-overlay {
+    align-items: flex-end !important;
+    padding: 0 !important;
+  }
+
+  .modal-dialog {
+    max-width: 100% !important;
+    width: 100% !important;
+    max-height: 88vh !important;
+    border-bottom-left-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+    border-top-left-radius: 20px !important;
+    border-top-right-radius: 20px !important;
+    padding: 20px 16px !important;
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 20px) !important;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.2) !important;
+    animation: slideUpModal 0.22s ease-out;
+  }
+
+  @keyframes slideUpModal {
+    from {
+      transform: translateY(100%);
+      opacity: 0.7;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  /* Bottom sheet grab handle */
+  .modal-dialog::before {
+    content: '';
+    display: block;
+    width: 38px;
+    height: 4px;
+    background-color: var(--border-color);
+    border-radius: 9999px;
+    margin: -8px auto 10px auto;
+  }
+}
+
+/* ==========================================================================
+   COMPACT MOBILE SCREEN BREAKPOINT: <= 540px (STANDARD SMARTPHONES)
+   ========================================================================== */
+@media (max-width: 540px) {
+  /* Page spacing */
+  .page-container {
+    padding: 10px 12px;
+    gap: 12px;
+  }
+
+  /* App Header Optimization */
+  .app-header {
+    padding: 6px 12px;
+    padding-top: max(6px, env(safe-area-inset-top, 6px));
+    min-height: 52px;
+  }
+
+  .header-title {
+    font-size: 14px;
+    font-weight: 800;
+  }
+
+  /* Hide redundant second bus badge to avoid horizontal crowding */
+  .header-bus-badge {
+    display: none !important;
+  }
+
+  .sync-pill {
+    padding: 4px 8px;
+    font-size: 10.5px;
+    letter-spacing: 0.03em;
+  }
+
+  .header-user-btn {
+    padding: 4px 8px;
+    font-size: 11px;
+    max-width: 130px;
+  }
+
+  .header-user-name {
+    max-width: 72px;
+  }
+
+  /* Dashboard Stats Grid (2x2 on phones) */
+  .dash-stats-grid {
+    gap: 8px;
+  }
+
+  .dash-stat-card {
+    padding: 12px;
+    min-height: 112px;
+    border-radius: 14px;
+  }
+
+  .dash-stat-icon-wrap {
+    width: 30px;
+    height: 30px;
+    min-width: 30px;
+    border-radius: 9px;
+  }
+
+  .dash-stat-icon-wrap svg {
+    width: 15px;
+    height: 15px;
+  }
+
+  .dash-stat-pill {
+    font-size: 9.5px;
+    padding: 2px 6px;
+  }
+
+  .dash-stat-number {
+    font-size: 24px;
+    margin: 2px 0 0 0;
+  }
+
+  .dash-stat-label {
+    font-size: 11px;
+  }
+
+  .dash-stat-caption {
+    font-size: 10px;
+  }
+
+  /* Coordinator Status Bar */
+  .coordinator-bar-card {
+    padding: 10px 12px;
+    gap: 6px;
+  }
+
+  .coordinator-single-card {
+    padding: 8px 10px;
+    gap: 8px;
+  }
+
+  .coord-avatar {
+    width: 32px;
+    height: 32px;
+  }
+
+  .coord-name-main {
+    font-size: 13px;
+  }
+
+  .coord-sub-role {
+    font-size: 10.5px;
+  }
+
+  /* Sticky Attendance Counter Bar */
+  .sticky-counter-bar {
+    top: 52px;
+    padding: 8px 10px;
+    gap: 6px;
+  }
+
+  .counter-stop-name {
+    font-size: 13px;
+  }
+
+  .counter-stop-sub {
+    font-size: 10px;
+  }
+
+  .counter-stat-group {
+    gap: 4px;
+  }
+
+  .counter-badge {
+    min-width: 42px;
+    padding: 3px 5px;
+  }
+
+  .counter-badge-label {
+    font-size: 8.5px;
+  }
+
+  .counter-badge-val {
+    font-size: 13.5px;
+  }
+
+  /* Gender Segmented Tabs */
+  .gender-tab-btn {
+    padding: 8px;
+    font-size: 12.5px;
+  }
+
+  /* Touch-optimized Attendance Buttons */
+  .attendance-actions-row {
+    gap: 6px;
+  }
+
+  .attendance-toggle-btn {
+    min-height: 48px;
+    padding: 8px 10px;
+    font-size: 12.5px;
+    font-weight: 700;
+    gap: 6px;
+    border-radius: var(--radius-sm);
+  }
+
+  .attendance-toggle-btn:active {
+    transform: scale(0.96);
+  }
+
+  /* Show mobile-only elements (hamburger button, etc.) */
+  .mobile-only {
+    display: revert !important;
+  }
+  /* Specifically for button.mobile-only, use flex */
+  button.mobile-only {
+    display: flex !important;
+  }
+
+  /* ─── MOBILE FIXED SUBMIT BUTTON ─────────────────────────────────────────
+     Rendered in App.jsx OUTSIDE .main-content scroll container.
+     position:fixed is always relative to viewport — 100% reliable.
+     z-index: 55 sits above bottom-nav (z-index: 50).
+     (Button visibility is now controlled by JS isMobile state in App.jsx)
+  ───────────────────────────────────────────────────────────────────────── */
+
+  /* Add spacing so last student row is never hidden behind the fixed button */
+  .page-container {
+    padding-bottom: calc(var(--bottom-nav-height) + 90px);
+  }
+
+
+  /* Mobile Bottom Nav — flat, full-width, always fixed */
+  .bottom-nav,
+  .menu {
+    display: flex !important;
+    position: fixed !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+    padding-bottom: env(safe-area-inset-bottom, 0px) !important;
+  }
+
+
+  /* Date Ribbon & Stop Scroller Padding */
+  .stop-scroller,
+  .date-ribbon-container {
+    padding: 2px 0 6px 0;
+    gap: 6px;
+  }
+
+  .stop-card-btn {
+    min-width: 124px;
+    padding: 8px 12px;
+  }
+
+  .stop-card-title {
+    font-size: 12.5px;
+  }
+
+  .stop-card-meta {
+    font-size: 10.5px;
+  }
+
+  .date-pill-btn {
+    padding: 7px 12px;
+    font-size: 11px;
+  }
+}
+
+/* ==========================================================================
+   EXTRA-NARROW MOBILE SCREEN BREAKPOINT: <= 360px (e.g. Galaxy Z Flip Folded, small phones)
+   ========================================================================== */
+@media (max-width: 360px) {
+  .page-container {
+    padding: 8px 10px;
+    gap: 10px;
+  }
+
+  .header-title {
+    font-size: 13px;
+  }
+
+  .header-user-btn {
+    padding: 3px 6px;
+  }
+
+  .header-user-name {
+    max-width: 50px;
+  }
+
+  .counter-badge {
+    min-width: 36px;
+    padding: 2px 4px;
+  }
+
+  .counter-badge-val {
+    font-size: 12px;
+  }
+
+  .stop-stats-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .dash-stat-number {
+    font-size: 20px;
+  }
+
+  .dash-stat-card {
+    min-height: 80px;
+    padding: 8px 10px;
+  }
+}
+
+/* ==========================================================================
+   TABLET & DESKTOP SCREENS: >= 768px
+   ========================================================================== */
+@media (min-width: 768px) {
+  .desktop-sidebar {
+    display: flex !important;
+    height: 100vh !important;
+    position: sticky !important;
+    top: 0 !important;
+    overflow: hidden !important;
+  }
+
+  .bottom-nav,
+  .menu {
+    display: none !important;
+  }
+
+  .mobile-card-list {
+    display: none !important;
+  }
+
+  .desktop-table-view {
+    display: block !important;
+  }
+
+  .main-content {
+    padding-bottom: 24px;
+  }
+
+  /* On desktop, submit button keeps static position, no special bottom needed */
+
+  .page-container {
+    padding: 24px 32px;
+    gap: 24px;
+  }
+
+  /* Multi-column grids on larger screens */
+  .grid-2col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .grid-3col {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+
+  .grid-4col {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
+
+  /* Multi-column student cards on desktop */
+  .student-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 14px;
+  }
+}
+
+/* Large displays */
+@media (min-width: 1200px) {
+  .page-container {
+    max-width: 1300px;
+  }
+}
+
+
